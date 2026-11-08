@@ -25,6 +25,7 @@ import {
 } from "@/utils/providerConstants";
 import { ImagesApi } from "@/app/(presentation-generator)/services/api/images";
 import { getApiUrl } from "@/utils/api";
+import { checkClaudeCodeReady } from "@/utils/claudeCode";
 import LogoutButton from "@/components/Auth/LogoutButton";
 import AdminPanel from "../admin/AdminPanel";
 import {
@@ -165,6 +166,13 @@ const SettingsPage = () => {
     }
   };
   const handleSaveConfig = async () => {
+    if (llmConfig.LLM === "claude_code") {
+      try { await checkClaudeCodeReady(); }
+      catch (error) {
+        notify.error("Claude Code is not ready", error instanceof Error ? error.message : "Reconnect your account.");
+        return;
+      }
+    }
 
     if (llmConfig.LLM === 'codex') {
       const isAuthenticated = await checkCurrentAuthStatus();
@@ -294,7 +302,9 @@ const SettingsPage = () => {
                     ? llmConfig.LITELLM_MODEL
                     : textProviderKey === "lmstudio"
                       ? llmConfig.LMSTUDIO_MODEL
-                    : textProviderKey === "anthropic"
+                     : textProviderKey === "claude_code"
+                       ? llmConfig.CLAUDE_CODE_MODEL
+                     : textProviderKey === "anthropic"
                       ? llmConfig.ANTHROPIC_MODEL
                       : textProviderKey === "ollama"
                         ? llmConfig.OLLAMA_MODEL

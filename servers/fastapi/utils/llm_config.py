@@ -379,6 +379,9 @@ def _get_llm_config(*, use_openai_responses_api: bool = False) -> ClientConfig:
                     detail="Anthropic API Key is not set",
                 )
             return AnthropicClientConfig(api_key=api_key)
+        case LLMProvider.CLAUDE_CODE:
+            # Only carries generation settings; the shared factory selects the CLI adapter.
+            return AnthropicClientConfig(api_key="claude-code-cli")
         case LLMProvider.OPENROUTER:
             api_key = get_openrouter_api_key_env()
             if not api_key:

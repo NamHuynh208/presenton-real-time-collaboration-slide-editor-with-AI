@@ -11,7 +11,7 @@ from typing import Any, Optional
 
 import llmai
 from fastapi import HTTPException
-from llmai import get_client
+from utils.llm_client import get_client
 from llmai.shared import (
     Message,
     ReasoningConfig,

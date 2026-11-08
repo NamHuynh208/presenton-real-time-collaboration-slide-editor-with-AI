@@ -82,6 +82,7 @@ class UserConfig(BaseModel):
     # Anthropic
     ANTHROPIC_API_KEY: Optional[str] = None
     ANTHROPIC_MODEL: Optional[str] = None
+    CLAUDE_CODE_MODEL: Optional[str] = None
 
     # Ollama
     OLLAMA_URL: Optional[str] = None

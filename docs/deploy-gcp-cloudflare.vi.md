@@ -462,7 +462,17 @@ Từ giờ, vào https://presenton.namprojects.site sẽ gặp màn hình Cloudf
 1. Vào https://console.anthropic.com, mục **API Keys**, bấm **Create Key**. Nạp credit hoặc thêm thẻ ở **Billing**.
 2. Trong Presenton: **Settings**, tab **Anthropic**, dán key, chọn model, rồi **Save**.
 
-> Presenton **chỉ** dùng được Claude bằng API key. Không có (và không được phép làm) kiểu đăng nhập bằng gói Claude Pro/Max cho ứng dụng bên thứ ba như Presenton.
+### 9.1.1. Claude Code (thử nghiệm, tài khoản riêng theo user)
+
+- Tab **Claude Code** nằm ngang hàng **ChatGPT** trong onboarding; không chọn Anthropic API key nếu muốn dùng CLI.
+- Docker image cài CLI chính thức `@anthropic-ai/claude-code@2.1.319`. Phải rebuild image sau khi cập nhật code, không chỉ restart container.
+- Bấm đăng nhập, mở URL Claude, copy toàn bộ mã xác thực và dán lại vào Presenton. Token mã hóa lưu riêng theo tài khoản web, không ghi vào API key dùng chung.
+- Chọn model ID được tài khoản cho phép (mặc định `claude-sonnet-4-6`), rồi Continue. Bước Continue kiểm tra token và CLI, không yêu cầu API key Anthropic.
+- User thường liên kết/ngắt Claude riêng ở **Settings → Account**; admin chọn provider/model chung cho workspace. Không chia sẻ token của admin cho user chưa liên kết.
+- CLI chỉ sinh nội dung/JSON; không có quyền tool filesystem/shell/MCP. Tool chỉnh slide được trả về Presenton để kiểm tra và thực thi qua cơ chế có sẵn.
+- Bản đầu trả kết quả theo từng lượt CLI, chưa stream token trực tiếp; tối đa hai CLI process cùng lúc, timeout 10 phút mỗi lượt. Web search dùng provider ngoài, không dùng native search.
+- Credential tồn tại qua restart trong database. Giữ cả `app_data/fastapi.db` và file chứa `AUTH_SECRET_KEY` khi backup để giải mã được token.
+- Theo [tài liệu Agent SDK](https://code.claude.com/docs/en/agent-sdk/quickstart), ứng dụng bên thứ ba cung cấp đăng nhập/quota claude.ai cần được Anthropic chấp thuận. Tự kiểm tra quyền sử dụng trước production; tính năng thử nghiệm không bảo đảm quyền quota/subscription.
 
 ### 9.2. ChatGPT: tab **ChatGPT** (đăng nhập OAuth)
 

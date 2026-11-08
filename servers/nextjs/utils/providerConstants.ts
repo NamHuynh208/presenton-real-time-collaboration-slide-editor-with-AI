@@ -202,6 +202,12 @@ export const LLM_PROVIDERS: Record<string, LLMProviderOption> = {
     description: "ChatGPT Plus/Pro via OAuth",
     icon: "/providers/openai.png",
   },
+  claude_code: {
+    value: "claude_code",
+    label: "Claude Code",
+    description: "Your linked Claude Code account via the official CLI",
+    icon: "/providers/claude-color.svg",
+  },
   openai: {
     value: "openai",
     label: "OpenAI",

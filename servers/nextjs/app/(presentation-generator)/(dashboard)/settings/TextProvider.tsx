@@ -33,6 +33,7 @@ import {
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { notify } from "@/components/ui/sonner";
 import CodexConfig from "./SettingCodex";
+import ClaudeCodeConfig from "@/components/ClaudeCodeConfig";
 import VertexAzureManualFields from "@/components/VertexAzureManualFields";
 import BedrockManualFields from "@/components/BedrockManualFields";
 import { MixpanelEvent, trackEvent } from "@/utils/mixpanel";
@@ -106,6 +107,8 @@ const TextProvider = ({ onInputChange, llmConfig }: OpenAIConfigProps) => {
         return "CUSTOM_MODEL";
       case "codex":
         return "CODEX_MODEL";
+      case "claude_code":
+        return "CLAUDE_CODE_MODEL";
       default:
         return "";
     }
@@ -621,6 +624,8 @@ const TextProvider = ({ onInputChange, llmConfig }: OpenAIConfigProps) => {
                       }}
                     />
                   </div>
+                ) : selectedProvider === "claude_code" ? (
+                  <ClaudeCodeConfig model={llmConfig.CLAUDE_CODE_MODEL || ""} onModelChange={(model) => onInputChange(model, "CLAUDE_CODE_MODEL")} />
                 ) : selectedProvider === "bedrock" ? (
                   <BedrockManualFields
                     llmConfig={llmConfig}
@@ -806,6 +811,7 @@ const TextProvider = ({ onInputChange, llmConfig }: OpenAIConfigProps) => {
               {!isManualModelProvider &&
                 selectedProvider !== "presenton" &&
                 selectedProvider !== "codex" &&
+                selectedProvider !== "claude_code" &&
                 selectedProvider !== "ollama" &&
                 !modelsChecked && (
                   <button
@@ -845,6 +851,7 @@ const TextProvider = ({ onInputChange, llmConfig }: OpenAIConfigProps) => {
           {!isManualModelProvider &&
           selectedProvider !== "presenton" &&
           selectedProvider !== "codex" &&
+          selectedProvider !== "claude_code" &&
           selectedProvider !== "ollama" &&
           modelsChecked ? (
             <div className="w-[262px]">

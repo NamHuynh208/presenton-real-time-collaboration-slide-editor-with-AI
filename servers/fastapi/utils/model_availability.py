@@ -195,6 +195,18 @@ async def check_llm_and_image_provider_api_or_model_availability():
         if not lmstudio_model:
             raise Exception("LMSTUDIO_MODEL must be provided")
 
+    elif get_llm_provider() == LLMProvider.CLAUDE_CODE:
+        import asyncio
+        from api.v1.auth.context import get_current_actor_id
+        from utils.claude_code_client import cli_executable
+        from services.claude_code_credentials import get_access_token
+
+        user_id = get_current_actor_id()
+        if user_id is None:
+            raise Exception("Sign in to Presenton to use Claude Code")
+        cli_executable()
+        await asyncio.to_thread(get_access_token, user_id)
+
     elif get_llm_provider() == LLMProvider.ANTHROPIC:
         anthropic_api_key = get_anthropic_api_key_env()
         if not anthropic_api_key:

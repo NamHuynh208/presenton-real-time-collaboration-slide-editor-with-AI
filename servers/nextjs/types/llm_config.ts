@@ -76,6 +76,7 @@ export interface LLMConfig {
   // Anthropic
   ANTHROPIC_API_KEY?: string;
   ANTHROPIC_MODEL?: string;
+  CLAUDE_CODE_MODEL?: string;
 
   // Ollama
   OLLAMA_URL?: string;

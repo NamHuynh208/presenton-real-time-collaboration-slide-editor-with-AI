@@ -138,6 +138,7 @@ async def create_db_and_tables():
                         ApiKey.__table__,
                         ProviderSettings.__table__,
                         PresentonCloudProvider.__table__,
+                        ClaudeCodeCredential.__table__,
                     ],
                 )
             )

@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from llmai import get_client
+from utils.llm_client import get_client
 from llmai.shared import SystemMessage, UserMessage
 from pydantic import BaseModel, ConfigDict, Field
 

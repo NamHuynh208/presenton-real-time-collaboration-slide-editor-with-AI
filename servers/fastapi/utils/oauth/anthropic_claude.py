@@ -4,7 +4,8 @@ The callback is deliberately the hosted Anthropic callback: it shows a code the
 user can paste back into Presenton, so this works behind a reverse proxy.
 """
 from dataclasses import dataclass
-from urllib.parse import urlencode
+import secrets
+from urllib.parse import parse_qs, urlencode, urlparse
 
 import httpx
 
@@ -15,6 +16,8 @@ AUTHORIZE_URL = "https://claude.ai/oauth/authorize"
 TOKEN_URL = "https://console.anthropic.com/v1/oauth/token"
 REDIRECT_URI = "https://console.anthropic.com/oauth/code/callback"
 SCOPE = "org:create_api_key user:profile user:inference"
+
+
 @dataclass
 class ClaudeFlow:
     verifier: str
@@ -47,11 +50,22 @@ def create_authorization_flow() -> ClaudeFlow:
 
 
 def exchange_code(code: str, verifier: str) -> ClaudeTokens:
-    actual_code = code.strip().split("#", 1)[0]
+    value = code.strip()
+    if value.startswith("https://"):
+        parsed = urlparse(value)
+        if parsed.hostname not in {"console.anthropic.com", "platform.claude.com"}:
+            raise ValueError("Unexpected Claude callback host")
+        params = parse_qs(parsed.query)
+        value = params.get("code", [""])[0]
+        incoming_state = params.get("state", [None])[0] or parsed.fragment or None
+    else:
+        value, _, incoming_state = value.partition("#")
+    if not value or (incoming_state and not secrets.compare_digest(incoming_state, verifier)):
+        raise ValueError("Invalid Claude authorization code or state")
     response = httpx.post(
         TOKEN_URL,
         json={
-            "code": actual_code,
+            "code": value,
             "state": verifier,
             "grant_type": "authorization_code",
             "client_id": CLIENT_ID,

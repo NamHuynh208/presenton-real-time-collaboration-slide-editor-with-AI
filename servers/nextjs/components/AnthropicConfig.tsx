@@ -37,48 +37,6 @@ export default function AnthropicConfig({
   const [modelsLoading, setModelsLoading] = useState(false);
   const [modelsChecked, setModelsChecked] = useState(false);
   const [apiKey, setApiKey] = useState(anthropicApiKey);
-  const [oauthSession, setOauthSession] = useState<string | null>(null);
-  const [oauthCode, setOauthCode] = useState("");
-  const [oauthLoading, setOauthLoading] = useState(false);
-
-  const signInWithClaudeCode = async () => {
-    setOauthLoading(true);
-    try {
-      const response = await fetch(getApiUrl("/api/v1/ppt/anthropic/auth/initiate"), { method: "POST" });
-      if (!response.ok) throw new Error("Could not start Claude Code sign-in");
-      const data = await response.json();
-      setOauthSession(data.session_id);
-      window.open(data.url, "_blank", "noopener,noreferrer");
-    } catch (error) {
-      notify.error("Claude Code sign-in failed", error instanceof Error ? error.message : "Please try again.");
-    } finally {
-      setOauthLoading(false);
-    }
-  };
-
-  const exchangeClaudeCode = async () => {
-    if (!oauthSession || !oauthCode.trim()) return;
-    setOauthLoading(true);
-    try {
-      const response = await fetch(getApiUrl("/api/v1/ppt/anthropic/auth/exchange"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: oauthSession, code: oauthCode.trim() }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.detail || "Could not complete Claude Code sign-in");
-      setOauthSession(null);
-      setOauthCode("");
-      setApiKey(data.api_key);
-      onInputChange(data.api_key, "anthropic_api_key");
-      onInputChange("anthropic", "LLM");
-      notify.success("Claude Code connected", "Anthropic credentials are ready. Check available models below.");
-    } catch (error) {
-      notify.error("Claude Code sign-in failed", error instanceof Error ? error.message : "Please try again.");
-    } finally {
-      setOauthLoading(false);
-    }
-  };
 
   useEffect(() => {
     setAvailableModels([]);
@@ -140,20 +98,6 @@ export default function AnthropicConfig({
           <p className="mt-2 text-sm max-w-[205px] text-gray-500">
             Your API key will be stored locally and never shared
           </p>
-        </div>
-        <div className="mb-4 rounded-lg border border-violet-100 bg-violet-50 p-4">
-          <p className="text-sm font-medium text-violet-950">Claude Code subscription</p>
-          <p className="mt-1 text-xs text-violet-700">Sign in with your Claude account instead of pasting an API key.</p>
-          {!oauthSession ? (
-            <button onClick={signInWithClaudeCode} disabled={oauthLoading} className="mt-3 rounded-full bg-violet-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">
-              {oauthLoading ? "Starting…" : "Sign in with Claude Code"}
-            </button>
-          ) : (
-            <div className="mt-3 flex gap-2">
-              <input value={oauthCode} onChange={(event) => setOauthCode(event.target.value)} placeholder="Paste code or callback URL" className="min-w-0 flex-1 rounded border border-violet-200 px-2 py-2 text-xs" />
-              <button onClick={exchangeClaudeCode} disabled={oauthLoading || !oauthCode.trim()} className="rounded bg-violet-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Connect</button>
-            </div>
-          )}
         </div>
         <div className="flex items-center gap-4">
           <div className="relative  w-[275px] ">

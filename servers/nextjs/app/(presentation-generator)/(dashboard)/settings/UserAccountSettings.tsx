@@ -1,4 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import { UserRound } from "lucide-react";
+import ClaudeCodeConfig from "@/components/ClaudeCodeConfig";
+import { DEFAULT_CLAUDE_CODE_MODEL } from "@/utils/claudeCode";
 
 import LogoutButton from "@/components/Auth/LogoutButton";
 
@@ -9,6 +14,7 @@ type UserAccountSettingsProps = {
 export default function UserAccountSettings({
   username,
 }: UserAccountSettingsProps) {
+  const [model, setModel] = useState(DEFAULT_CLAUDE_CODE_MODEL);
   return (
     <div className="relative flex h-screen flex-col overflow-hidden font-syne">
       <main className="mx-auto flex w-full gap-6 overflow-hidden">
@@ -77,6 +83,10 @@ export default function UserAccountSettings({
                 </div>
               </div>
 
+              <div className="mt-6 border-t border-[#EDEEEF] pt-6">
+                <ClaudeCodeConfig model={model} onModelChange={setModel} showModel={false} />
+                <p className="mt-3 text-sm text-gray-600">The workspace administrator selects the generation model. Link your own account here when the workspace uses Claude Code.</p>
+              </div>
               <div className="mt-6 border-t border-[#EDEEEF] pt-6">
                 <p className="text-sm font-semibold text-[#191919]">
                   Sign out

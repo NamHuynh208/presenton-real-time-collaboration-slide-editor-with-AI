@@ -3202,7 +3202,8 @@ async def _run_generate_presentation_task(
     export_cookie_header: Optional[str],
     owner_id: uuid.UUID | None = None,
 ) -> None:
-    owner_token = set_current_owner_id(owner_id)
+    from api.v1.auth.context import get_current_actor_id
+    owner_token = set_current_owner_id(get_current_actor_id() or owner_id)
     admin_token = set_current_owner_is_admin(False)
     try:
         async with async_session_maker() as sql_session:

@@ -25,6 +25,11 @@ def get_current_owner_id() -> uuid.UUID | None:
     return _CURRENT_OWNER_ID.get()
 
 
+def get_current_actor_id() -> uuid.UUID | None:
+    """Credential identity must stay user-specific even in a shared workspace."""
+    return _CURRENT_OWNER_ID.get()
+
+
 def get_current_owner_is_admin() -> bool:
     return _CURRENT_OWNER_IS_ADMIN.get()
 

@@ -10,7 +10,7 @@ from typing import Any, Literal
 
 import dirtyjson  # type: ignore[import-untyped]
 from fastapi import HTTPException
-from llmai import get_client  # type: ignore[import-not-found]
+from utils.llm_client import get_client
 from llmai.shared import (  # type: ignore[import-not-found]
     AssistantMessage,
     AssistantToolCall,

@@ -220,6 +220,10 @@ export const getLLMConfigValidationError = (
     if (!isProvided(llmConfig.TOGETHER_MODEL)) {
       return "Select or enter a Together model id.";
     }
+  } else if (llm === "claude_code") {
+    if (!isProvided(llmConfig.CLAUDE_CODE_MODEL?.trim())) {
+      return "Enter a Claude Code model ID.";
+    }
   } else if (llm === "anthropic") {
     if (!isProvided(llmConfig.ANTHROPIC_API_KEY)) {
       return "Anthropic API key is required.";

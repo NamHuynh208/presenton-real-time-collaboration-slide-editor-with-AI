@@ -10,7 +10,7 @@ from json import JSONDecodeError
 from time import perf_counter
 from typing import Any, Callable
 
-from llmai import get_client
+from utils.llm_client import get_client
 from llmai.shared import (
     AssistantMessage,
     ImageContentPart,

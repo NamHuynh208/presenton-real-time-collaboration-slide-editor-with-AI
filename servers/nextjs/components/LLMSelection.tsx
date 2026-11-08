@@ -6,6 +6,7 @@ import AnthropicConfig from "./AnthropicConfig";
 import OllamaConfig from "./OllamaConfig";
 import CustomConfig from "./CustomConfig";
 import CodexConfig from "./CodexConfig";
+import ClaudeCodeConfig from "./ClaudeCodeConfig";
 import {
   updateLLMConfig,
   changeProvider as changeProviderUtil,
@@ -57,7 +58,8 @@ export default function LLMProviderSelection({
       (llmConfig.LLM === "ollama" && !llmConfig.OLLAMA_MODEL) ||
       (llmConfig.LLM === "custom" && !llmConfig.CUSTOM_MODEL) ||
       (llmConfig.LLM === "anthropic" && !llmConfig.ANTHROPIC_MODEL) ||
-      (llmConfig.LLM === "codex" && !llmConfig.CODEX_MODEL);
+      (llmConfig.LLM === "codex" && !llmConfig.CODEX_MODEL) ||
+      (llmConfig.LLM === "claude_code" && !llmConfig.CLAUDE_CODE_MODEL?.trim());
 
     const needsProviderApiKey =
       (llmConfig.LLM === "openai" && !llmConfig.OPENAI_API_KEY) ||
@@ -226,13 +228,14 @@ export default function LLMProviderSelection({
           onValueChange={handleProviderChange}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-6 bg-transparent h-10">
+          <TabsList className="grid w-full grid-cols-7 bg-transparent h-10">
             <TabsTrigger value="openai">OpenAI</TabsTrigger>
             <TabsTrigger value="google">Google</TabsTrigger>
             <TabsTrigger value="anthropic">Anthropic</TabsTrigger>
             <TabsTrigger value="ollama">Ollama</TabsTrigger>
             <TabsTrigger value="custom">Custom</TabsTrigger>
             <TabsTrigger value="codex">ChatGPT</TabsTrigger>
+            <TabsTrigger value="claude_code">Claude Code</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -297,6 +300,9 @@ export default function LLMProviderSelection({
           </TabsContent>
 
           {/* ChatGPT / Codex Content */}
+          <TabsContent value="claude_code" className="mt-6">
+            <ClaudeCodeConfig model={llmConfig.CLAUDE_CODE_MODEL || ""} onModelChange={(model) => input_field_changed(model, "claude_code_model")} />
+          </TabsContent>
           <TabsContent value="codex" className="mt-6">
             <CodexConfig
               codexModel={llmConfig.CODEX_MODEL || ""}

@@ -527,6 +527,8 @@ async def stream_generate_events(
         raise
     finally:
         stop_requested.set()
+        if not completed and callable(getattr(client, "cancel", None)):
+            client.cancel()
         if completed or worker_task.done():
             await worker_task
         else:

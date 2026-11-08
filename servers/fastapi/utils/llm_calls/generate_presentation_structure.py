@@ -1,6 +1,6 @@
 from typing import Optional
 
-from llmai import get_client
+from utils.llm_client import get_client
 from llmai.shared import JSONSchemaResponse, Message, SystemMessage, UserMessage
 from models.presentation_layout import PresentationLayoutModel
 from models.presentation_outline_model import PresentationOutlineModel

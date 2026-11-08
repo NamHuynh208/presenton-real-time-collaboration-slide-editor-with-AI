@@ -1,3 +1,4 @@
+import os
 from fastapi import HTTPException
 from google import genai
 from openai import OpenAI
@@ -151,6 +152,8 @@ def get_model():
         return get_cerebras_model_env() or DEFAULT_CEREBRAS_MODEL
     elif selected_llm == LLMProvider.ANTHROPIC:
         return get_anthropic_model_env() or DEFAULT_ANTHROPIC_MODEL
+    elif selected_llm == LLMProvider.CLAUDE_CODE:
+        return os.getenv("CLAUDE_CODE_MODEL") or "claude-sonnet-4-6"
     elif selected_llm == LLMProvider.OLLAMA:
         return get_ollama_model_env()
     elif selected_llm == LLMProvider.CUSTOM:

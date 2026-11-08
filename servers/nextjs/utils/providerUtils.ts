@@ -175,6 +175,7 @@ export const updateLLMConfig = (
     openai_compat_image_api_key: "OPENAI_COMPAT_IMAGE_API_KEY",
     openai_compat_image_model: "OPENAI_COMPAT_IMAGE_MODEL",
     codex_model: "CODEX_MODEL",
+    claude_code_model: "CLAUDE_CODE_MODEL",
   };
 
   const configKey = fieldMappings[field];

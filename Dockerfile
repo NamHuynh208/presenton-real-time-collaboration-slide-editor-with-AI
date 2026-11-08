@@ -128,6 +128,8 @@ RUN find /usr/share/fonts -type f ! -iname 'Noto*' -delete \
     && fc-cache -fsv
 
 RUN mkdir -p /app/scripts /app/servers/fastapi /app/servers/nextjs
+RUN npm install --global @anthropic-ai/claude-code@2.1.319 \
+    && claude --version
 RUN mkdir -p /app_data/exports /app_data/images /app_data/uploads /app_data/fonts /app_data/templates /app_data/pptx-to-html /app_data/pptx-to-json \
     && chmod -R a+rX /app_data
 

@@ -5,4 +5,5 @@
 - [x] Thêm UI Claude Code ngang hàng ChatGPT trong onboarding.
 - [x] Chạy Python syntax check, Next.js production build và diff check.
 - [ ] Thêm adapter Claude Code runtime cho generation/agent panel.
+- [x] Sửa chuỗi migration Claude; thêm self-check đảm bảo chỉ có một head.
 - [x] Đọc tài liệu deploy; hướng dẫn deploy sẽ gửi trong câu trả lời.

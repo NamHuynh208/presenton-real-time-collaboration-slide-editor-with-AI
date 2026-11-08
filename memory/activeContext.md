@@ -6,3 +6,4 @@
 - Commit đã push: `f1c7a47` trên branch `master`.
 - Đang chuyển OAuth Claude sang credential mã hóa theo từng user web; không còn gọi endpoint tạo API key bị 403.
 - UI onboarding có tab Claude Code ngang hàng ChatGPT; cần adapter runtime Claude Code riêng để dùng token trực tiếp cho generation.
+- Sửa lỗi migration Claude tạo hai head khiến backend có thể không khởi động: nối sau `026c0ba8b35c`, cập nhật `REVISION_HEAD`, thêm test graph migration.

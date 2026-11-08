@@ -5,7 +5,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision: str = "a1b2c3d4e5f6"
-down_revision: str | None = "d0a2b4c6e8f1"
+down_revision: str | None = "026c0ba8b35c"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

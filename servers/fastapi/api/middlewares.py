@@ -100,7 +100,6 @@ class SessionAuthMiddleware(BaseHTTPMiddleware):
             admin_only = (
                 path.startswith("/api/v1/admin/")
                 or path.startswith("/api/v1/ppt/codex/auth/")
-                or path.startswith("/api/v1/ppt/anthropic/auth/")
                 or (
                     path.startswith("/api/v1/ppt/fonts/")
                     and request.method in {"POST", "DELETE"}

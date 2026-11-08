@@ -1,18 +1,16 @@
-import time
 import uuid
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from utils.get_env import get_anthropic_api_key_env
-from utils.set_env import set_anthropic_api_key_env
-from utils.user_config import save_anthropic_api_key_to_user_config
+from api.v1.auth.users import get_current_user
+from models.sql.user import User
+from services.claude_code_credentials import delete_credential, get_credential, store_credential
+from services.database import get_async_session
 from utils.oauth.anthropic_claude import (
-    ClaudeTokens,
-    create_api_key,
     create_authorization_flow,
     exchange_code,
-    refresh_token,
 )
 
 ANTHROPIC_AUTH_ROUTER = APIRouter(prefix="/anthropic/auth", tags=["Anthropic OAuth"])
@@ -24,35 +22,38 @@ class ExchangeRequest(BaseModel):
     code: str = Field(min_length=1, max_length=2000)
 
 
-def _store(tokens: ClaudeTokens) -> dict:
-    try:
-        api_key = create_api_key(tokens.access_token)
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail="Claude Code login succeeded, but creating an Anthropic API credential failed") from exc
-    set_anthropic_api_key_env(api_key)
-    save_anthropic_api_key_to_user_config()
-    return {
-        "status": "authenticated",
-        "api_key": api_key,
-        "expires_at": int(time.time() * 1000) + tokens.expires_at * 1000,
-    }
-
-
 @ANTHROPIC_AUTH_ROUTER.post("/initiate")
-async def initiate_anthropic_auth():
+async def initiate_anthropic_auth(
+    current_user: User = Depends(get_current_user),
+):
     flow = create_authorization_flow()
     session_id = str(uuid.uuid4())
-    _sessions[session_id] = {"verifier": flow.verifier}
+    _sessions[session_id] = {"verifier": flow.verifier, "user_id": str(current_user.id)}
     return {"session_id": session_id, "url": flow.url}
 
 
 @ANTHROPIC_AUTH_ROUTER.post("/exchange")
-async def exchange_anthropic_auth(body: ExchangeRequest):
-    session = _sessions.pop(body.session_id, None)
-    if not session:
+async def exchange_anthropic_auth(
+    body: ExchangeRequest,
+    db_session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user),
+):
+    link_session = _sessions.pop(body.session_id, None)
+    if not link_session:
         raise HTTPException(status_code=404, detail="Session not found or already consumed")
     try:
-        return _store(exchange_code(body.code, session["verifier"]))
+        tokens = exchange_code(body.code, link_session["verifier"])
+        if link_session["user_id"] != str(current_user.id):
+            raise HTTPException(status_code=403, detail="This Claude Code link belongs to another user")
+        await store_credential(
+            db_session,
+            user_id=current_user.id,
+            email=current_user.username,
+            access_token=tokens.access_token,
+            refresh_token=tokens.refresh_token,
+            expires_in=tokens.expires_at,
+        )
+        return {"status": "authenticated", "detail": "Claude Code linked"}
     except HTTPException:
         raise
     except Exception as exc:
@@ -60,8 +61,11 @@ async def exchange_anthropic_auth(body: ExchangeRequest):
 
 
 @ANTHROPIC_AUTH_ROUTER.get("/status")
-async def anthropic_auth_status():
-    return {"status": "authenticated" if get_anthropic_api_key_env() else "unauthenticated"}
+async def anthropic_auth_status(
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user),
+):
+    return {"status": "authenticated" if await get_credential(session, current_user.id) else "unauthenticated"}
 
 
 @ANTHROPIC_AUTH_ROUTER.post("/refresh")
@@ -70,7 +74,9 @@ async def refresh_anthropic_auth():
 
 
 @ANTHROPIC_AUTH_ROUTER.post("/logout")
-async def logout_anthropic_auth():
-    set_anthropic_api_key_env("")
-    save_anthropic_api_key_to_user_config()
+async def logout_anthropic_auth(
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user),
+):
+    await delete_credential(session, current_user.id)
     return {"status": "unauthenticated"}

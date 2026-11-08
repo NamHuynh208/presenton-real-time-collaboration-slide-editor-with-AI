@@ -4,7 +4,6 @@ The callback is deliberately the hosted Anthropic callback: it shows a code the
 user can paste back into Presenton, so this works behind a reverse proxy.
 """
 from dataclasses import dataclass
-import secrets
 from urllib.parse import urlencode
 
 import httpx
@@ -16,9 +15,6 @@ AUTHORIZE_URL = "https://claude.ai/oauth/authorize"
 TOKEN_URL = "https://console.anthropic.com/v1/oauth/token"
 REDIRECT_URI = "https://console.anthropic.com/oauth/code/callback"
 SCOPE = "org:create_api_key user:profile user:inference"
-CREATE_KEY_URL = "https://api.anthropic.com/api/oauth/claude_cli/create_api_key"
-
-
 @dataclass
 class ClaudeFlow:
     verifier: str
@@ -88,21 +84,8 @@ def refresh_token(refresh: str) -> ClaudeTokens:
     access = payload.get("access_token")
     if not isinstance(access, str) or not access:
         raise ValueError("Anthropic returned no refreshed access token")
-    return ClaudeTokens(access, payload.get("refresh_token") or refresh, int(payload.get("expires_in", 8 * 60 * 60)))
-
-
-def create_api_key(access_token: str) -> str:
-    response = httpx.post(
-        CREATE_KEY_URL,
-        headers={"Authorization": f"Bearer {access_token}"},
-        json={},
-        timeout=30,
+    return ClaudeTokens(
+        access,
+        payload.get("refresh_token") or refresh,
+        int(payload.get("expires_in", 8 * 60 * 60)),
     )
-    response.raise_for_status()
-    payload = response.json()
-    key = payload.get("raw_key") or payload.get("secret_key")
-    if not key and isinstance(payload.get("api_key"), dict):
-        key = payload["api_key"].get("secret_key")
-    if not isinstance(key, str) or not key:
-        raise ValueError("Anthropic returned no API key")
-    return key

@@ -39,10 +39,11 @@ const OTHER_PROVIDERS = Object.values(LLM_PROVIDERS).filter(
         !LOCAL_PROVIDERS.includes(provider.value)
 );
 const OTHER_PROVIDER_VALUES = new Set(OTHER_PROVIDERS.map((provider) => provider.value));
-type TextProviderTab = "chatgpt" | "local" | "other";
+type TextProviderTab = "chatgpt" | "claude" | "local" | "other";
 
 const getTextProviderTab = (provider?: string): TextProviderTab => {
     if (provider === "codex" || provider === "chatgpt") return "chatgpt";
+    if (provider === "claude_code") return "claude";
     if (LOCAL_PROVIDERS.includes(provider || "")) return "local";
     return "other";
 };
@@ -117,7 +118,6 @@ const PresentonMode = ({
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(data.detail || "Could not complete Claude Code sign-in");
-            setLlmConfig((prev) => ({ ...prev, LLM: "anthropic", ANTHROPIC_API_KEY: data.api_key }));
             setClaudeOAuthSession(null);
             setClaudeOAuthCode("");
             notify.success("Claude Code connected", "Your Anthropic account is ready to use.");
@@ -1092,12 +1092,15 @@ const PresentonMode = ({
         const nextProvider =
             textProviderTab === "chatgpt"
                 ? "codex"
+                : textProviderTab === "claude"
+                    ? "anthropic"
                 : textProviderTab === "local"
                     ? "ollama"
                     : OTHER_PROVIDERS[0].value;
 
         const providerMatchesTab =
             (textProviderTab === "chatgpt" && llmConfig.LLM === "codex") ||
+            (textProviderTab === "claude" && llmConfig.LLM === "anthropic") ||
             (textProviderTab === "local" && LOCAL_PROVIDERS.includes(llmConfig.LLM || "")) ||
             (textProviderTab === "other" && OTHER_PROVIDER_VALUES.has(llmConfig.LLM || ""));
 
@@ -1193,10 +1196,14 @@ const PresentonMode = ({
                     onValueChange={handleTextProviderTabChange}
                     className="w-full"
                 >
-                    <TabsList className="grid h-14 w-full grid-cols-3 rounded-[10px] border border-[#EDEEEF] bg-[#F6F6F9] p-1 shadow-inner shadow-black/[0.02]">
+                    <TabsList className="grid h-14 w-full grid-cols-4 rounded-[10px] border border-[#EDEEEF] bg-[#F6F6F9] p-1 shadow-inner shadow-black/[0.02]">
                         <TabsTrigger value="chatgpt" className="h-12 gap-2 rounded-[8px] border border-transparent px-4 text-sm font-semibold text-[#5F6062] transition-all hover:text-[#191919] data-[state=active]:border-[#D9D6FE] data-[state=active]:bg-white data-[state=active]:text-[#191919] data-[state=active]:shadow-[0_8px_24px_rgba(16,19,35,0.08)]">
                             <Image src="/providers/openai.png" alt="" width={16} height={16} className="object-contain" />
                             ChatGPT
+                        </TabsTrigger>
+                        <TabsTrigger value="claude" className="h-12 gap-2 rounded-[8px] border border-transparent px-4 text-sm font-semibold text-[#5F6062] transition-all hover:text-[#191919] data-[state=active]:border-[#D9D6FE] data-[state=active]:bg-white data-[state=active]:text-[#191919] data-[state=active]:shadow-[0_8px_24px_rgba(16,19,35,0.08)]">
+                            <Image src="/providers/claude-color.svg" alt="" width={16} height={16} className="object-contain" />
+                            Claude Code
                         </TabsTrigger>
                         <TabsTrigger value="local" className="h-12 gap-2 rounded-[8px] border border-transparent px-4 text-sm font-semibold text-[#5F6062] transition-all hover:text-[#191919] data-[state=active]:border-[#D9D6FE] data-[state=active]:bg-white data-[state=active]:text-[#191919] data-[state=active]:shadow-[0_8px_24px_rgba(16,19,35,0.08)]">
                             <Laptop className="h-4 w-4" />
@@ -1210,6 +1217,8 @@ const PresentonMode = ({
                     <p className="mt-3 text-xs leading-relaxed text-gray-500">
                         {textProviderTab === "chatgpt"
                             ? "Connect your ChatGPT account and choose a supported model."
+                            : textProviderTab === "claude"
+                                ? "Use a Claude Code subscription linked to your Presenton account."
                             : textProviderTab === "local"
                                 ? "Run models on your machine with Ollama or LM Studio."
                                 : "Connect hosted AI providers using an API key or custom endpoint."}
@@ -1251,6 +1260,22 @@ const PresentonMode = ({
                                 </Select>
                             </div>
                         )}
+                    </TabsContent>
+                    <TabsContent value="claude" className="mt-6">
+                        <div className="rounded-xl border border-violet-100 bg-violet-50 p-5">
+                            <p className="text-base font-medium text-violet-950">Claude Code subscription</p>
+                            <p className="mt-1 text-sm text-violet-700">Link one Claude Code account to your Presenton account. Credentials are stored separately per web user.</p>
+                            {!claudeOAuthSession ? (
+                                <button type="button" onClick={startClaudeOAuth} disabled={claudeOAuthLoading} className="mt-4 rounded-full bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+                                    {claudeOAuthLoading ? "Starting…" : "Sign in with Claude Code"}
+                                </button>
+                            ) : (
+                                <div className="mt-4 flex gap-2">
+                                    <input value={claudeOAuthCode} onChange={(event) => setClaudeOAuthCode(event.target.value)} placeholder="Paste authentication code" className="min-w-0 flex-1 rounded-lg border border-violet-200 px-3 py-2.5 text-sm" />
+                                    <button type="button" onClick={exchangeClaudeOAuth} disabled={claudeOAuthLoading || !claudeOAuthCode.trim()} className="rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Connect</button>
+                                </div>
+                            )}
+                        </div>
                     </TabsContent>
                     <TabsContent value="local" className="mt-6">
                         <div className="grid grid-cols-2 gap-3">
